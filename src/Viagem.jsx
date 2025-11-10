@@ -3,10 +3,8 @@ import { useAuth0 } from "@auth0/auth0-react";
 import LoginButton from "./LoginButton";
 import LogoutButton from "./LogoutButton";
 
-
 //const BASE_URL = "http://localhost:8080";
 const BASE_URL = "/api";
-
 
 export default function ViagensApp() {
   const [viagens, setViagens] = useState([]);
@@ -30,13 +28,15 @@ export default function ViagensApp() {
     const fetchToken = async () => {
       try {
         const accessToken = await getAccessTokenSilently();
-        console.log(accessToken)
+        console.log("accessToken:", accessToken);
         setToken(accessToken);
 
         if (accessToken) {
-
           const payload = JSON.parse(atob(accessToken.split('.')[1]));
-          setRoles(payload['https://stocks-insper.com/roles']);
+          console.log("token payload:", payload);
+          const claim = payload['https://stocks-insper.com/roles'];
+          // normalize to array or empty array
+          setRoles(Array.isArray(claim) ? claim : (claim ? [claim] : []));
         }
       } catch (e) {
         console.error('Erro ao buscar token:', e);
@@ -48,10 +48,18 @@ export default function ViagensApp() {
     }
   }, [isAuthenticated, getAccessTokenSilently]);
 
-
   if (!isAuthenticated) {
     return <LoginButton />;
   }
+
+  // helper para checar se usuário tem role "admin" (case-insensitive)
+  const userIsAdmin = (() => {
+    if (!roles) return false;
+    if (Array.isArray(roles)) {
+      return roles.some(r => String(r).toLowerCase() === "admin");
+    }
+    return String(roles).toLowerCase() === "admin";
+  })();
 
   async function fetchViagens() {
     setLoading(true);
@@ -111,9 +119,8 @@ export default function ViagensApp() {
   }
 
   async function deleteViagem(id) {
-    const isAdmin =
-      Array.isArray(roles) ? roles.includes("Admin") : roles === "Admin";
-    if (!isAdmin) {
+    // reutiliza a mesma checagem case-insensitive
+    if (!userIsAdmin) {
       setError("Ação não autorizada.");
       return;
     }
@@ -139,9 +146,6 @@ export default function ViagensApp() {
       setError(err.message);
     }
   }
-
-  const isAdminView =
-    Array.isArray(roles) ? roles.includes("admin") : roles === "admin";
 
   return (
     <div className="min-h-screen p-6 bg-gray-50 font-sans">
@@ -222,8 +226,8 @@ export default function ViagensApp() {
                       <div className="font-semibold">{s.transporte}</div>
                     </div>
                     <div className="text-right">
-                      {/* exemplo de campo adicional */}
-                      {isAdminView && (
+                      {/* botão Excluir só aparece se userIsAdmin for true */}
+                      {userIsAdmin && (
                         <div className="mt-2">
                           <button
                             onClick={() => deleteViagem(s.id)}
