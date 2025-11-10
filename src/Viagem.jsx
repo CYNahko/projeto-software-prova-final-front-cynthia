@@ -124,7 +124,8 @@ export default function ViagensApp() {
       const res = await fetch(`${BASE_URL}/viagens/${id}`, {
         method: "DELETE",
         headers: {
-          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`,
         },
       });
 
