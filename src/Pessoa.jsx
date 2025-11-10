@@ -5,7 +5,7 @@ import LogoutButton from "./LogoutButton";
 
 
 //const BASE_URL = "http://localhost:8080";
-const BASE_URL = "http://18.229.161.129:8080";
+const BASE_URL = "/api";
 
 
 export default function PessoasApp() {
