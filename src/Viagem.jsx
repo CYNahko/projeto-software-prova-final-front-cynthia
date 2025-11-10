@@ -112,7 +112,7 @@ export default function ViagensApp() {
 
   async function deleteViagem(id) {
     const isAdmin =
-      Array.isArray(roles) ? roles.includes("admin") : roles === "admin";
+      Array.isArray(roles) ? roles.includes("Admin") : roles === "Admin";
     if (!isAdmin) {
       setError("Ação não autorizada.");
       return;
